@@ -1,8 +1,10 @@
 import os
 
 from flask import Flask
-import os
+from flask_mongoengine import MongoEngine
 from dotenv import load_dotenv
+
+db = MongoEngine()
 
 def load_config(app):
     """ Loads configuration from .env file   """
@@ -12,12 +14,17 @@ def load_config(app):
     load_dotenv(dotenv_path)
 
     app.secret_key = os.getenv('SECRET_KEY')
-    app.config['DATABASE_CONNECTION'] = os.getenv('MONGODB_CONNECTION_BASE') + os.getenv('DATABASE_NAME')
+    app.config['MONGODB_DB'] = os.getenv('MONGODB_DB')
+    app.config['MONGODB_HOST'] = os.getenv('MONGODB_HOST')
+    app.config['MONGODB_PORT'] = os.getenv('MONGODB_PORT')
+    app.config['MONGODB_USERNAME'] = os.getenv('MONGODB_USERNAME')
+    app.config['MONGODB_PASSWORD'] = os.getenv('MONGODB_PASSWORD')
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     load_config(app)
+    db.init_app(app)
 
     # ensure the instance folder exists
     try:
@@ -26,10 +33,9 @@ def create_app(test_config=None):
         pass
 
     # a simple page that says hello
-    @app.route('/')
+    @app.route('/hello')
     def hello():
-        a_setting = app.config.get('DATABASE_CONNECTION')
-        return 'my db setting: {}'.format(a_setting)
+        return "hello"
 
     # register auth api
     from flaskapi import auth
