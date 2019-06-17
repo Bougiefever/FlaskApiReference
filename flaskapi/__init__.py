@@ -1,30 +1,47 @@
 import os
 
 from flask import Flask
-from flask_mongoengine import MongoEngine
 from dotenv import load_dotenv
+from flask_pymongo import PyMongo
+from pathlib import Path  # python3 only
 
-db = MongoEngine()
+mongo = PyMongo()
 
-def load_config(app):
-    """ Loads configuration from .env file   """
-    # load configuration settings
-    APP_ROOT = os.path.abspath(os.path.dirname(__file__))
-    dotenv_path = os.path.join(APP_ROOT, '.env')
-    load_dotenv(dotenv_path)
+def load_config(app, test_config):
+    """ Loads configuration settings   """
 
-    app.secret_key = os.getenv('SECRET_KEY')
-    app.config['MONGODB_DB'] = os.getenv('MONGODB_DB')
-    app.config['MONGODB_HOST'] = os.getenv('MONGODB_HOST')
-    app.config['MONGODB_PORT'] = os.getenv('MONGODB_PORT')
-    app.config['MONGODB_USERNAME'] = os.getenv('MONGODB_USERNAME')
-    app.config['MONGODB_PASSWORD'] = os.getenv('MONGODB_PASSWORD')
+    app.config.from_mapping(
+        # a default secret that should be overridden by instance config
+        SECRET_KEY="default",
+        # database settings
+        MONGODB_DB='flaskydb',
+        MONGODB_HOST='127.0.0.1',
+        MONGODB_PORT=27017,
+        MONGODB_USERNAME='flaskyuser',
+        MONGODB_PASSWORD='secret'
+    )
+
+    if test_config is None:
+        app.config.from_object('flaskapi.config.DevelopmentConfig')
+    else:
+        app.config.update(test_config)
+
+    mongodb_connection_string = "mongodb://{0}:{1}@{2}:{3}/{4}".format(
+        app.config.get('MONGODB_USERNAME'),
+        app.config.get('MONGODB_PASSWORD'),
+        app.config.get('MONGODB_HOST'),
+        app.config.get('MONGODB_PORT'),
+        app.config.get('MONGODB_DB')
+    )
+    app.config["MONGO_URI"] = mongodb_connection_string
+
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
-    load_config(app)
-    db.init_app(app)
+    load_config(app, test_config)
+
+    mongo.init_app(app)
 
     # ensure the instance folder exists
     try:

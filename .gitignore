@@ -15,3 +15,4 @@ build/
 
 .vscode/
 .env
+config.py
