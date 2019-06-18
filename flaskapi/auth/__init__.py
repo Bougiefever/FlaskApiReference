@@ -1,5 +1,4 @@
 from flaskapi.auth.views import bp, RegisterAPI, LoginAPI, LogoutAPI
-from flaskapi import mongo
 
 register_view = RegisterAPI.as_view('register_api')
 bp.add_url_rule('/auth/register/', view_func=register_view, methods=['POST'])

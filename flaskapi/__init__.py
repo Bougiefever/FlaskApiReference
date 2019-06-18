@@ -4,8 +4,22 @@ from flask import Flask
 from dotenv import load_dotenv
 from flask_pymongo import PyMongo
 from pathlib import Path  # python3 only
+from bson.objectid import ObjectId
+import datetime, json
+from dbcollection import Resource, representation
 
 mongo = PyMongo()
+
+class JSONEncoder(json.JSONEncoder):
+    ''' extend json-encoder class'''
+
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, datetime.datetime):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
+
 
 def load_config(app, test_config):
     """ Loads configuration settings   """
@@ -14,7 +28,7 @@ def load_config(app, test_config):
         # a default secret that should be overridden by instance config
         SECRET_KEY="default",
         # database settings
-        MONGODB_DB='flaskydb',
+        MONGODB_DB='myflaskydb',
         MONGODB_HOST='127.0.0.1',
         MONGODB_PORT=27017,
         MONGODB_USERNAME='flaskyuser',
@@ -26,9 +40,14 @@ def load_config(app, test_config):
     else:
         app.config.update(test_config)
 
-    mongodb_connection_string = "mongodb://{0}:{1}@{2}:{3}/{4}".format(
-        app.config.get('MONGODB_USERNAME'),
-        app.config.get('MONGODB_PASSWORD'),
+    # mongodb_connection_string = "mongodb://{0}:{1}@{2}:{3}/{4}".format(
+    #     app.config.get('MONGODB_USERNAME'),
+    #     app.config.get('MONGODB_PASSWORD'),
+    #     app.config.get('MONGODB_HOST'),
+    #     app.config.get('MONGODB_PORT'),
+    #     app.config.get('MONGODB_DB')
+    # )
+    mongodb_connection_string = "mongodb://{0}:{1}/{2}".format(
         app.config.get('MONGODB_HOST'),
         app.config.get('MONGODB_PORT'),
         app.config.get('MONGODB_DB')

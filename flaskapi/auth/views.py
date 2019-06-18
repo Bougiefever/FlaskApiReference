@@ -4,6 +4,7 @@ from http import HTTPStatus
 import json
 from werkzeug.security import generate_password_hash, check_password_hash
 from flaskapi import mongo
+from bson.objectid import ObjectId
 
 bp = Blueprint('auth', __name__)
 
@@ -23,7 +24,9 @@ class RegisterAPI(MethodView):
         try:
             user = mongo.db.users.find_one({'username': username})
             if user is None:
-                response_object = { "message": "register post method response"}
+                user = {'username': username, 'passwordhash': passhash}
+                user_objectid = mongo.db.users.insert_one(user)
+                response_object = { "message": "register post method response", "id": str(user_objectid.inserted_id)}
                 response = make_response(jsonify(response_object), HTTPStatus.CREATED, headers)
                 return response
             else:
