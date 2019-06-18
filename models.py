@@ -1,22 +1,18 @@
-from werkzeug.exceptions import NotFound
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask import make_response, jsonify
-from flaskapi import mongo, JSONEncoder
+from flaskapi import mongo
 
-Users = mongo.db.users
-headers = { 'Content-Type': 'application/json'}
+users = mongo.db.users
 
 class User():
     def get(self, username):
         spec = { "username": username}
-        doc = Users.find_one(spec)
+        doc = users.find_one(spec)
         if not doc:
             return None
 
         return doc
 
     def post(self, user):
-        doc = Users.insert_one(user).inserted_id
+        doc = users.insert_one(user).inserted_id
         return str(doc)
 
     def put(self, payload, justOne=True):
@@ -24,3 +20,9 @@ class User():
 
     def delete(self, payload, justOne=True):
         return NotImplemented
+
+def authenticate(username, password):
+    pass
+
+def identity(payload):
+    pass
