@@ -6,7 +6,7 @@ from flask_pymongo import PyMongo
 from pathlib import Path  # python3 only
 from bson.objectid import ObjectId
 import datetime, json
-from dbcollection import Resource, representation
+#from dbcollection import Resource, representation
 
 mongo = PyMongo()
 
@@ -59,6 +59,7 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     load_config(app, test_config)
+    app.json_encoder = JSONEncoder
 
     mongo.init_app(app)
 
